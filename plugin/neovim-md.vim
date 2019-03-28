@@ -1,13 +1,13 @@
+" You need to set this to the path of the nvim-md binary
 let s:bin = '/home/okno/WORKSHOP/RUST_sandbox/nvim-md/target/debug/nvim-md'
-let s:MdRender = 'md_render'
-let s:BuffChanged = "buffer_changed"
 
 if !exists('s:nvimMdJobId')
-    let g:nvimMdJobId = 0
+    let s:nvimMdJobId = 0
 endif
 
 function! s:configureCommands()
-    command! -nargs=0 MdRender :call s:md_render()
+    command! -nargs=0 Render :call s:render()
+    command! -nargs=0 RenderStop :call s:render_stop()
 endfunction
 
 call s:configureCommands() 
@@ -18,22 +18,18 @@ function! s:initRpc()
     return id
 endfunction
 
-function! s:md_render()
-    call Connect()
+function! s:render_stop() 
+    echom s:nvimMdJobId
+    call jobstop(s:nvimMdJobId)
 endfunction
 
-function! Connect()
-    let id = s:initRpc()
-    let g:nvimMdJobId = id
-
-    if 0 == id
+function! s:render()
+    let s:nvimMdJobId = s:initRpc()
+    if 0 == s:nvimMdJobId
         echoerr "nvimMd: cannot start rpc process"
-    elseif -1 == id
+    elseif -1 == s:nvimMdJobId
         echoerr "nvimMd: rpc process is not executable"
     else
-        echom g:nvimMdJobId
-        echom s:BuffChanged
-        autocmd TextChanged,TextChangedP,TextChangedI * :call rpcnotify(g:nvimMdJobId, "buffer_changed")
+    
     endif
-
 endfunction

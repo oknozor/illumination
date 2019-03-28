@@ -1,6 +1,4 @@
 use gtk::*;
-use pango::*;
-use sourceview::*;
 use webkit2gtk::*;
 
 
