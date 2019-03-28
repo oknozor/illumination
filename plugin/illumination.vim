@@ -1,5 +1,5 @@
 " You need to set this to the path of the nvim-md binary
-let s:bin = '/home/okno/WORKSHOP/RUST_sandbox/nvim-md/target/debug/nvim-md'
+let s:bin = 'path_to_this_repo/target/release/illumination'
 
 if !exists('s:nvimMdJobId')
     let s:nvimMdJobId = 0
@@ -12,7 +12,6 @@ endfunction
 
 call s:configureCommands() 
 
-" Initialize RPC
 function! s:initRpc()
     let id = jobstart([s:bin], { 'rpc': v:true })
     return id
