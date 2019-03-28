@@ -15,7 +15,6 @@ enum Message {
     Unknown(String),
 }
 
-
 impl From<String> for Message {
     fn from(event: String) -> Self {
         match &event[..] {
