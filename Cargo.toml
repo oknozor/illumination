@@ -6,17 +6,17 @@ edition = "2018"
 
 [dependencies]
 neovim-lib = "0.6"
-gdk = "0.6"
 horrorshow = "0.6.2"
-pango = "0.2.0"
+webkit2gtk = "0.5.1"
 pulldown-cmark = "0.1.0"
-tiny-keccak = "1.4.0"
-webkit2gtk = "0.2"
-
-[dependencies.sourceview]
-features = ["v3_18"]
-version = "0.2"
+pango = "0.5"
+fragile = "0.3.0"
+glib= "0.6"
 
 [dependencies.gtk]
 features = ["v3_22"]
-version = "0.2"
+version = "0.5"
+
+[dependencies.sourceview]
+features = ["v3_22"]
+version = "0.5"
