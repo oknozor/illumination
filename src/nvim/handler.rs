@@ -1,55 +1,71 @@
-pub struct NvimWrapper {
+pub struct NvimHandler {
     nvim: Neovim,
 }
+
+use std::io;
+use std::io::{Read, Write};
+use std::fs::File;
+use std::sync::{Mutex, Arc};
+
 
 pub struct BufferHandler {}
 
 use neovim_lib::{Neovim, NeovimApi, Session, Handler, Value, RequestHandler};
 use std::fmt::Error;
+use crate::nvim::handler::Messages::*;
+use std::sync::mpsc::Sender;
+use neovim_lib::neovim_api::Buffer;
+use webkit2gtk::*;
+use core::borrow::BorrowMut;
+use crate::preview::render;
+use fragile::Fragile;
+use std::rc::Rc;
+
+enum Messages {
+    BufferChanged,
+    Unknown(String),
+}
 
 
-impl NvimWrapper {
-    pub fn init() -> NvimWrapper {
-        let mut session = Session::new_tcp("127.0.0.1:6666").unwrap();
-        session.start_event_loop_handler(BufferHandler {});
-
-        let mut nvim = Neovim::new(session);
-        nvim.subscribe("TextChanged").expect("Unable to suscribe to Neovim event");
-
-        NvimWrapper { nvim }
-    }
-
-/*    pub fn handle(&mut self) -> String {
-        let reveiver = self.nvim.session.start_event_loop_channel();
-
-        let mut modified_buffer = String::new();
-        for (event, value) in reveiver {
-            let buffers = self.nvim.list_bufs().unwrap();
-            let buffer = &buffers[0];
-
-            let len = buffer.line_count(&mut self.nvim).unwrap();
-            modified_buffer = buffer
-                .get_lines(&mut self.nvim, 0, len, true)
-                .expect("Unable to get nvim buffer")
-                .iter()
-                .map(|line| format!("{}\n", line.to_owned()))
-                .collect()
+impl From<String> for Messages {
+    fn from(event: String) -> Self {
+        match &event[..] {
+            "buffer_changed" => BufferChanged,
+            _ => Messages::Unknown(event),
         }
-
-        modified_buffer
-    }*/
-}
-
-impl Handler for BufferHandler {
-    fn handle_notify(&mut self, _name: &str, _args: Vec<Value>) {
-        println!("OK");
     }
 }
 
-impl RequestHandler for BufferHandler {
-    fn handle_request(&mut self, _name: &str, _args: Vec<Value>) -> Result<Value, Value> {
-        println!("NOTIFY");
-        Err(Value::from("Not implemented"))
+impl NvimHandler {
+    pub fn new() -> NvimHandler {
+        let session = Session::new_tcp("127.0.0.1:6666").unwrap();
+        let mut nvim = Neovim::new(session);
+        NvimHandler { nvim }
+    }
+
+    pub fn revc(&mut self, shared_buffer: Arc<Mutex<Fragile<WebView>>>) {
+        let receiver = self.nvim.session.start_event_loop_channel();
+        let buffer = self.nvim.get_current_buf().unwrap();
+        buffer.attach(&mut self.nvim, true, vec![]);
+
+        for (event, values) in receiver {
+            let shared_buffer = shared_buffer.clone();
+            let len = buffer.line_count(&mut self.nvim).unwrap();
+            println!(" received event : {}", event);
+            let str_buffer = buffer.get_lines(&mut self.nvim, 0, len, true)
+                                   .unwrap()
+                                   .iter()
+                                   .map(|line| format!("{}\n", line.to_owned()))
+                                   .collect::<String>();
+
+            if event == "nvim_buf_lines_event" {
+                glib::MainContext::default().invoke(move || {
+                    let buff = shared_buffer.lock().unwrap();
+                    buff.get().load_html(&render(&str_buffer), None);
+                });
+            }
+        }
     }
 }
+
 

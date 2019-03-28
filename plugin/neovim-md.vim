@@ -1,44 +1,39 @@
-" Constants for RPC messages.
+let s:bin = '/home/okno/WORKSHOP/RUST_sandbox/nvim-md/target/debug/nvim-md'
 let s:MdRender = 'md_render'
+let s:BuffChanged = "buffer_changed"
 
-" Initialize the channel
 if !exists('s:nvimMdJobId')
-	let s:nvimMdJobId = 0
+    let g:nvimMdJobId = 0
 endif
 
-" The path to the binary that was created out of 'cargo build' or 'cargo build --release". This will generally be 'target/release/name'
-let s:bin = '/home/okno/WORKSHOP/RUST_sandbox/nvim-md/target/debug/nvim-md'
-
-" Entry point. Initialize RPC. If it succeeds, then attach commands to the `rpcnotify` invocations.
-function! s:connect()
-  let id = s:initRpc()
-  
-  if 0 == id
-    echoerr "nvimMd: cannot start rpc process"
-  elseif -1 == id
-    echoerr "nvimMd: rpc process is not executable"
-  else
-    " Mutate our jobId variable to hold the channel ID
-    let s:nvimMdJobId = id 
- 
-     call s:configureCommands() 
-  endif
+function! s:configureCommands()
+    command! -nargs=0 MdRender :call s:md_render()
 endfunction
+
+call s:configureCommands() 
 
 " Initialize RPC
 function! s:initRpc()
-  if s:nvimMdJobId == 0
-    let jobid = jobstart([s:bin], { 'rpc': v:true })
-    return jobid
-  else
-    return s:nvimMdJobId
-  endif
+    let id = jobstart([s:bin], { 'rpc': v:true })
+    return id
 endfunction
 
-  command! -nargs=0 MdRender :call s:md_render()
-
 function! s:md_render()
-  echom "ok sended"
-  call s:initRpc()
-  call rpcnotify(s:nvimMdJobId, s:MdRender)
+    call Connect()
+endfunction
+
+function! Connect()
+    let id = s:initRpc()
+    let g:nvimMdJobId = id
+
+    if 0 == id
+        echoerr "nvimMd: cannot start rpc process"
+    elseif -1 == id
+        echoerr "nvimMd: rpc process is not executable"
+    else
+        echom g:nvimMdJobId
+        echom s:BuffChanged
+        autocmd TextChanged,TextChangedP,TextChangedI * :call rpcnotify(g:nvimMdJobId, "buffer_changed")
+    endif
+
 endfunction
