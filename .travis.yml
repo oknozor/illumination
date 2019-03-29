@@ -1,10 +1,13 @@
 language: rust
+env:
+  - GTK=3.22
+addons:
+  apt:
+    packages:
+      - libgtk-3-dev
 rust:
   - stable
   - beta
   - nightly
-matrix:
-  allow_failures:
-    - rust: nightly
-  fast_finish: true
-  cache: cargo
+script:
+  - cargo build --verbose
