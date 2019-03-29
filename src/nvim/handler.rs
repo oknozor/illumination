@@ -1,6 +1,6 @@
 use std::sync::{Mutex, Arc};
 
-use neovim_lib::{Neovim, NeovimApi, Session};
+use neovim_lib::{Neovim, NeovimApi, Session, UiAttachOptions};
 use crate::nvim::handler::Message::*;
 use webkit2gtk::*;
 use crate::preview::render;
@@ -32,14 +32,39 @@ impl NvimHandler {
     }
 
     pub fn revc(&mut self, shared_buffer: Arc<Mutex<Fragile<WebView>>>) {
+
         let receiver = self.nvim.session.start_event_loop_channel();
-        let current_buffer = self.nvim.get_current_buf().unwrap();
+
+        // Attach current buffer event to the channel
+        let mut current_buffer = self.nvim.get_current_buf().unwrap();
         current_buffer.attach(&mut self.nvim, true, vec![]).unwrap();
 
-        for (event, _values) in receiver {
-            let shared_buffer = shared_buffer.clone();
-            let len = current_buffer.line_count(&mut self.nvim).unwrap();
+        // Attach to UI just to get redraw notification, so we make sure every options is deactivated
+        let mut ui_options = UiAttachOptions::new();
+        ui_options.set_tabline_external(false);
+        ui_options.set_cmdline_external(false);
+        ui_options.set_hlstate_external(false);
+        ui_options.set_linegrid_external(false);
+        ui_options.set_tabline_external(false);
+        ui_options.set_popupmenu_external(false);
+        ui_options.set_rgb(false);
+        ui_options.set_wildmenu_external(false);
+        self.nvim.ui_attach(100, 100, &ui_options).unwrap();
 
+        // Listen for updates
+        for (event, _values) in receiver {
+            let fragile_webview = shared_buffer.clone();
+            let len = current_buffer.line_count(&mut self.nvim).unwrap();
+            let current_buffer_id = self.nvim.get_current_buf().unwrap().get_number(&mut self.nvim).unwrap();
+
+            // Reattach the new buffer on change
+            if current_buffer.get_number(&mut self.nvim).unwrap() != current_buffer_id  {
+                current_buffer.detach(&mut self.nvim).expect("Unable to detach buffer");
+                current_buffer = self.nvim.get_current_buf().unwrap();
+                current_buffer.attach(&mut self.nvim, true, vec![]).unwrap();
+            };
+
+            // Update on buff_line_event
             match Message::from(event) {
                 BufferChanged => {
                     let str_buffer = current_buffer
@@ -50,13 +75,12 @@ impl NvimHandler {
                         .collect::<String>();
 
                     glib::MainContext::default().invoke(move || {
-                        let buff = shared_buffer.lock().unwrap();
-                        buff.get().load_html(&render(&str_buffer), None);
+                        let webview_lock = fragile_webview.lock().unwrap();
+                        webview_lock.get().load_html(&render(&str_buffer), None);
                     });
                 }
-
                 Unknown(_err_event) => {}
-            }
+            };
         }
     }
 }

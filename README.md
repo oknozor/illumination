@@ -43,7 +43,7 @@ let s:bin = 'path_to_this_repo/target/release/illumination'
     - [ ] theme selection via config file
 - Nvim integration
     - [ ] filetype 
-    - [ ] switching buffer 
+    - [x] switching buffer
 - Gtk
     - [ ] add pdf export
     - [ ] asciidoctor support

@@ -28,8 +28,8 @@ impl App {
 
 
         window.set_titlebar(&header.container);
-        window.set_title("NvimRender");
-        window.set_role("NvimRender");
+        window.set_title("Illumination");
+        window.set_role("Illumination");
         window.add(&content.container);
 
         window.connect_delete_event(move |_, _| {
