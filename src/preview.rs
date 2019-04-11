@@ -12,7 +12,7 @@ fn mark_to_html(markdown: &str) -> String {
 
 /// In goes markdown text; out comes stylish HTML text.
 pub fn render(markdown: &str) -> String {
-    format!(
+     format!(
         "{}",
         html!(
             : doctype::HTML;
