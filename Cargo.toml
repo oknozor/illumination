@@ -13,6 +13,10 @@ pango = "0.5"
 fragile = "0.3.0"
 glib= "0.6"
 
+[dependencies.log]
+version = "0.4"
+features = ["max_level_debug", "release_max_level_warn"]
+
 [dependencies.gtk]
 features = ["v3_22"]
 version = "0.5"

@@ -26,7 +26,6 @@ impl App {
         let header = Header::new();
         let content = Content::new();
 
-
         window.set_titlebar(&header.container);
         window.set_title("Illumination");
         window.set_role("Illumination");
