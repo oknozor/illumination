@@ -9,28 +9,37 @@ Issues are welcome but Illumination is at a early stage of development, before s
 
 ![example screenshot](screenshots/demo.png)
 
-## Quick start 
+## Intallation
 ---
 
-There is currently no build script, the simplest way to test the plugin is the following : 
+1. Compile the rust binary and add it to your path : 
 
-1. Compile the rust binary : 
-
-``` 
-cargo build --release
+```sh 
+git clone  https://github.com/oknozor/illumination/ 
+cd illumination
+cargo install --path .
 ```
 
-2. Modify the bin path in [plugin/illumination.vim](plugin/illumination.md) :
+2. Copy `illumination.vim` in your runtime path (see `:help runtimepath`) :
+
+### Usage
+
+Within Neovim use the `:Render` command to start rendering and `:RenderStop` to quit Illumination.
+
+## Debug
+
+To debug Illumination start nvim in RPC mode on port `6666` : 
 
 ```
-let s:bin = 'path_to_this_repo/target/release/illumination'
+nvim test.md --listen 127.0.0.1:6666
 ```
 
-3. Source the script and run it :
-    - open some markdown file with nvim
-    - source the launch script : `:source path_to_this_repo/plugin/illumination.vim`
-    - run the following command `:Render`
-    - to stop rendering : `:RenderStop` or just close your current nvim instance
+Then run Illumination without cargo `--release` option. 
+
+```
+cd illumination
+cargo run 
+```
 
 ## Roadmap
 
@@ -48,5 +57,5 @@ let s:bin = 'path_to_this_repo/target/release/illumination'
     - [ ] add pdf export
     - [ ] asciidoctor support
     - [ ] latex support
-    - [ ] autoscroll
+    - [x] autoscroll
 

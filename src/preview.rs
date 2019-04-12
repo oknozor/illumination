@@ -11,8 +11,9 @@ fn mark_to_html(markdown: &str) -> String {
 }
 
 /// In goes markdown text; out comes stylish HTML text.
-pub fn render(markdown: &str) -> String {
-     format!(
+pub fn render(markdown: &str, scroll: i64) -> String {
+    let scroll = format!("function scrollDown() {{ window.scrollTo(0, {}); }}; window.onload = scrollDown;", scroll);
+    format!(
         "{}",
         html!(
             : doctype::HTML;
@@ -23,6 +24,9 @@ pub fn render(markdown: &str) -> String {
                     script(src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/rust.min.js") {}
                     script {
                         : Raw("hljs.initHighlightingOnLoad()")
+                    }
+                    script {
+                        : (scroll.clone())
                     }
                     style {
                         : "body { width: 80%; margin: 0 auto }";
