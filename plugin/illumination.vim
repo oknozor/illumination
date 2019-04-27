@@ -1,5 +1,4 @@
-" You need to set this to the path of the nvim-md binary
-let s:bin = 'path_to_this_repo/target/release/illumination'
+let s:bin = 'illumination'
 
 if !exists('s:nvimMdJobId')
     let s:nvimMdJobId = 0
