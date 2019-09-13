@@ -7,7 +7,7 @@ pub struct Header {
 impl Header {
     pub fn new() -> Header {
         let container = HeaderBar::new();
-        container.set_title("Illumination");
+        container.set_title(Some("Illumination"));
         container.set_show_close_button(true);
         Header { container }
     }
