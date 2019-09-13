@@ -1,10 +1,15 @@
 use horrorshow::Raw;
 use horrorshow::helper::doctype;
-use pulldown_cmark::{html, Parser};
+use pulldown_cmark::{html, Parser, Options};
 
 /// In goes markdown text; out comes HTML text.
 fn mark_to_html(markdown: &str) -> String {
-    let parser = Parser::new(&markdown);
+    let mut options = Options::empty();
+    options.insert(Options::ENABLE_STRIKETHROUGH);
+    options.insert(Options::ENABLE_TABLES);
+    options.insert(Options::ENABLE_FOOTNOTES);
+    options.insert(Options::ENABLE_TASKLISTS);
+    let parser = Parser::new_ext(&markdown, options);
     let mut buffer = String::new();
     html::push_html(&mut buffer, parser);
     buffer

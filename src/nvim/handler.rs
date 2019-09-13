@@ -5,6 +5,7 @@ use crate::preview::render;
 use fragile::Fragile;
 use neovim_lib::{Neovim, NeovimApi, Session, UiAttachOptions};
 use webkit2gtk::*;
+use webkit2gtk::WebView;
 
 pub struct NvimHandler {
     nvim: Neovim,
@@ -117,7 +118,7 @@ impl NvimHandler {
 
                         webview_lock
                             .get()
-                            .run_javascript(js_scroll, None, move |_msg| {
+                            .run_javascript(js_scroll, None::<&gio::Cancellable>, move |_msg| {
                                 info!("webkit window scrolling to : {} px", scroll_target);
                             });
 
@@ -134,7 +135,7 @@ impl NvimHandler {
 
                         webview_lock.get().run_javascript(
                             "document.documentElement.offsetHeight",
-                            None,
+                            None::<&gio::Cancellable>,
                             move |msg| {
                                 let current_webkit_win_height = msg.unwrap().get_value().unwrap().to_number(context.get());
                                 info!(
