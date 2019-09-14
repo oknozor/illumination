@@ -58,4 +58,3 @@ cargo run
     - [ ] asciidoctor support
     - [ ] latex support
     - [x] autoscroll
-

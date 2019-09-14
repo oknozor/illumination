@@ -1,5 +1,5 @@
-use std::{process, thread};
 use std::sync::{Arc, Mutex};
+use std::{process, thread};
 
 use gtk;
 use gtk::*;
@@ -36,7 +36,11 @@ impl App {
             Inhibit(false)
         });
 
-        App { window, header, content }
+        App {
+            window,
+            header,
+            content,
+        }
     }
 
     pub fn connect_nvim(self) {

@@ -4,15 +4,13 @@ extern crate horrorshow;
 #[macro_use]
 extern crate log;
 
-
 use gtk::*;
 
 use ui::App;
 
-pub mod ui;
 pub mod nvim;
 pub mod preview;
-
+pub mod ui;
 
 fn main() {
     logger::init().expect("Error initializing logger");
@@ -23,10 +21,9 @@ fn main() {
     gtk::main();
 }
 
-
 // A simple logger only available if compiled with debug attribute
 mod logger {
-    use log::{SetLoggerError, LevelFilter, Record, Level, Metadata};
+    use log::{Level, LevelFilter, Metadata, Record, SetLoggerError};
 
     pub struct SimpleLogger;
 
@@ -47,7 +44,6 @@ mod logger {
     }
 
     pub fn init() -> Result<(), SetLoggerError> {
-        log::set_logger(&LOGGER)
-            .map(|()| log::set_max_level(LevelFilter::Info))
+        log::set_logger(&LOGGER).map(|()| log::set_max_level(LevelFilter::Info))
     }
 }
