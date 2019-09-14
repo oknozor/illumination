@@ -3,18 +3,25 @@ extern crate gtk;
 extern crate horrorshow;
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate lazy_static;
+
+extern crate config;
+
+mod nvim;
+mod preview;
+mod settings;
+mod ui;
 
 use gtk::*;
-
 use ui::App;
-
-pub mod nvim;
-pub mod preview;
-pub mod ui;
 
 fn main() {
     logger::init().expect("Error initializing logger");
     info!("Illumination started in debud mode");
+    #[cfg(debug_assertions)]
+    settings::show();
+
     let app = App::new();
     app.window.show_all();
     app.connect_nvim();
