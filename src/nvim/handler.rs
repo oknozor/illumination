@@ -4,8 +4,8 @@ use crate::nvim::handler::Message::*;
 use crate::preview::render;
 use fragile::Fragile;
 use neovim_lib::{Neovim, NeovimApi, Session, UiAttachOptions};
-use webkit2gtk::*;
 use webkit2gtk::WebView;
+use webkit2gtk::*;
 
 pub struct NvimHandler {
     nvim: Neovim,
@@ -30,10 +30,10 @@ impl From<String> for Message {
 impl NvimHandler {
     pub fn new() -> NvimHandler {
         #[cfg(debug_assertions)]
-            let session = Session::new_tcp("127.0.0.1:6666").unwrap();
+        let session = Session::new_tcp("127.0.0.1:6666").unwrap();
 
         #[cfg(not(debug_assertions))]
-            let session = Session::new_parent().unwrap();
+        let session = Session::new_parent().unwrap();
 
         let nvim = Neovim::new(session);
         NvimHandler { nvim }
@@ -66,13 +66,20 @@ impl NvimHandler {
 
             let current_win = self.nvim.get_current_win().unwrap();
             let cursor = current_win.get_cursor(&mut self.nvim);
-            let cursor_offset = current_buffer.get_offset(&mut self.nvim, cursor.unwrap().0).unwrap_or(0);
+            let cursor_offset = current_buffer
+                .get_offset(&mut self.nvim, cursor.unwrap().0)
+                .unwrap_or(0);
             let total_line = current_buffer.line_count(&mut self.nvim).unwrap();
-            let total_lenght = current_buffer.get_offset(&mut self.nvim, total_line).unwrap();
+            let total_lenght = current_buffer
+                .get_offset(&mut self.nvim, total_line)
+                .unwrap();
             let win_height = current_win.get_height(&mut self.nvim);
             let win_width = current_win.get_width(&mut self.nvim);
             let win_position = current_win.get_position(&mut self.nvim);
-            info!("window geometry : witdh {:?}, height {:?}",win_width, win_height);
+            info!(
+                "window geometry : witdh {:?}, height {:?}",
+                win_width, win_height
+            );
             info!("window position : {:?}", win_position);
             info!("cursor position : {:?}", cursor_offset);
 
@@ -88,9 +95,12 @@ impl NvimHandler {
             // Reattach the new buffer on change
             let active_buffer_id = current_buffer.get_number(&mut self.nvim).unwrap();
             if active_buffer_id != current_buffer_id {
+                let new_buffer_name = current_buffer.get_name(&mut self.nvim);
                 info!(
-                    "Buffer changed detached buffer [{}], reattaching buffer, [{}]",
-                    current_buffer_id, active_buffer_id
+                    "Buffer changed detached buffer [{}], reattaching buffer, id=[{}], name= [{}]",
+                    current_buffer_id,
+                    active_buffer_id,
+                    new_buffer_name.unwrap_or("Unknown".into())
                 );
                 current_buffer
                     .detach(&mut self.nvim)
@@ -103,25 +113,30 @@ impl NvimHandler {
             match Message::from(event) {
                 Redraw => {
                     let js_window_height_inner = Arc::clone(&js_window_height);
-                    info!("cursor offset {}, buffer lenght {}", cursor_offset, total_lenght);
+                    info!(
+                        "cursor offset {}, buffer lenght {}",
+                        cursor_offset, total_lenght
+                    );
 
                     let cursor_pos_percent = (cursor_offset as f64 / total_lenght as f64) * 100.0;
                     info!("cursor at {}%", cursor_pos_percent);
 
                     let js_window_height_inner = js_window_height_inner.lock().unwrap();
 
-                    let scroll_target = (*js_window_height_inner / 100.0) * cursor_pos_percent as f64;
+                    let scroll_target =
+                        (*js_window_height_inner / 100.0) * cursor_pos_percent as f64;
                     info!("webkit inner height {:?}", js_window_height_inner);
                     glib::MainContext::default().invoke(move || {
                         let webview_lock = fragile_webview.lock().unwrap();
                         let js_scroll = &format!("window.scrollTo(0, {})", scroll_target as i64);
 
-                        webview_lock
-                            .get()
-                            .run_javascript(js_scroll, None::<&gio::Cancellable>, move |_msg| {
+                        webview_lock.get().run_javascript(
+                            js_scroll,
+                            None::<&gio::Cancellable>,
+                            move |_msg| {
                                 info!("webkit window scrolling to : {} px", scroll_target);
-                            });
-
+                            },
+                        );
                     });
 
                     let js_window_height_inner = Arc::clone(&js_window_height);
@@ -137,7 +152,8 @@ impl NvimHandler {
                             "document.documentElement.offsetHeight",
                             None::<&gio::Cancellable>,
                             move |msg| {
-                                let current_webkit_win_height = msg.unwrap().get_value().unwrap().to_number(context.get());
+                                let current_webkit_win_height =
+                                    msg.unwrap().get_value().unwrap().to_number(context.get());
                                 info!(
                                     "webkit window scroll height : {:?}",
                                     current_webkit_win_height
@@ -160,7 +176,10 @@ impl NvimHandler {
 
                     glib::MainContext::default().invoke(move || {
                         let webview_lock = fragile_webview.lock().unwrap();
-                        webview_lock.get().load_html(&render(&str_buffer, *js_window_height_inner.lock().unwrap() as i64), None);
+                        webview_lock.get().load_html(
+                            &render(&str_buffer, *js_window_height_inner.lock().unwrap() as i64),
+                            None,
+                        );
                     });
                 }
                 Unknown(_err_event) => {}

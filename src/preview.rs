@@ -1,6 +1,6 @@
-use horrorshow::Raw;
 use horrorshow::helper::doctype;
-use pulldown_cmark::{html, Parser, Options};
+use horrorshow::Raw;
+use pulldown_cmark::{html, Options, Parser};
 
 /// In goes markdown text; out comes HTML text.
 fn mark_to_html(markdown: &str) -> String {
@@ -17,7 +17,10 @@ fn mark_to_html(markdown: &str) -> String {
 
 /// In goes markdown text; out comes stylish HTML text.
 pub fn render(markdown: &str, scroll: i64) -> String {
-    let scroll = format!("function scrollDown() {{ window.scrollTo(0, {}); }}; window.onload = scrollDown;", scroll);
+    let scroll = format!(
+        "function scrollDown() {{ window.scrollTo(0, {}); }}; window.onload = scrollDown;",
+        scroll
+    );
     format!(
         "{}",
         html!(

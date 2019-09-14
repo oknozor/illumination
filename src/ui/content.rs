@@ -1,7 +1,6 @@
 use gtk::*;
 use webkit2gtk::*;
 
-
 pub struct Content {
     pub container: Paned,
     pub preview: WebView,
@@ -16,8 +15,3 @@ impl Content {
         Content { container, preview }
     }
 }
-
-
-
-
-

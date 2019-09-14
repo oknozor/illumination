@@ -1,7 +1,7 @@
 use gtk::*;
 
 pub struct Header {
-    pub container: HeaderBar
+    pub container: HeaderBar,
 }
 
 impl Header {
