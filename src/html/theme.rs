@@ -1,5 +1,6 @@
 use self::Theme::*;
 
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Theme {
     Default,
     Github,
