@@ -7,6 +7,7 @@ extern crate log;
 extern crate lazy_static;
 
 extern crate config;
+extern crate dirs;
 
 mod nvim;
 mod preview;
