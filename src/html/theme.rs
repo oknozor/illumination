@@ -1,26 +1,28 @@
-use std::path::Path;
-use std::env;
 use self::Theme::*;
-use std::fs;
-use dirs; 
 
 pub enum Theme {
-    Bootstrap
+    Default,
+    Github,
 }
 
 impl Theme {
-    fn path(self) -> String {
-        let home = env::var("HOME").unwrap_or_else(|_| panic!("Unable to locate home directory"));
+    pub fn as_str(self) -> &'static str {
         match self {
-            Bootstrap => format!("{}/.config/illumination/themes/boostrap", home)
+            Default => "default/style.css",
+            Github => "github.css",
         }
     }
 
-    pub fn rel_path(self) {
+    pub fn names() -> Vec<&'static str> {
+        vec!["Github", "Default"]
+    }
+}
 
-        let current = fs::canonicalize(Path::new("./")).expect("maeoimoireza");
-        println!("{:?}", current);
-        let abs_path = Path::new(&self.path());
-
+impl From<&str> for Theme {
+    fn from(input: &str) -> Self {
+        match input {
+            "Github" => Github,
+            _ => Default,
+        }
     }
 }
