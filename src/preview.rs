@@ -1,6 +1,8 @@
 use horrorshow::helper::doctype;
 use horrorshow::Raw;
 use pulldown_cmark::{html, Options, Parser};
+use crate::settings::THEME;
+use crate::settings::JS;
 
 /// In goes markdown text; out comes HTML text.
 fn mark_to_html(markdown: &str) -> String {
@@ -17,29 +19,31 @@ fn mark_to_html(markdown: &str) -> String {
 
 /// In goes markdown text; out comes stylish HTML text.
 pub fn render(markdown: &str, scroll: i64) -> String {
+
     let scroll = format!(
         "function scrollDown() {{ window.scrollTo(0, {}); }}; window.onload = scrollDown;",
         scroll
     );
+
     format!(
         "{}",
         html!(
             : doctype::HTML;
             html {
                 head {
-                    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css") {}
-                    script(src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js") {}
-                    script(src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/rust.min.js") {}
-                    script {
-                        : Raw("hljs.initHighlightingOnLoad()")
-                    }
-                    script {
-                        : (scroll.clone())
-                    }
                     style {
                         : "body { width: 80%; margin: 0 auto }";
-                        : "img { max-width: 80% }"
+                        : "img { max-width: 80% }";
+                        : Raw(THEME.as_str());
                     }
+                    script {
+                        : Raw(JS.as_str());
+                    }
+                    script {
+                        : (scroll.clone());
+                        : Raw("hljs.initHighlightingOnLoad();")
+                    }
+
                 }
                 body {
                     : Raw(&mark_to_html(markdown));
