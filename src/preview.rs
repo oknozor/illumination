@@ -35,7 +35,7 @@ pub fn render(markdown: &str, scroll: i64) -> String {
                         : "body { width: 80%; margin: 0 auto }";
                         : "img { max-width: 80% }";
                         : Raw(HLJS_CSS.as_str());
-                        : Raw(THEME.lock().unwrap().as_str());
+                        : Raw(THEME.lock().unwrap().contents.as_str());
                     }
                     script {
                         : Raw(JS.as_str());

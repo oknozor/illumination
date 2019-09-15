@@ -44,10 +44,11 @@ impl App {
     }
 
     pub fn connect_nvim(self) {
-        let preview = Arc::new(Mutex::new(Fragile::new(self.content.preview.clone())));
+        let webkit = Arc::new(Mutex::new(Fragile::new(self.content.preview.clone())));
+        let mut nvim_handler = NvimHandler::new(webkit);
+
         thread::spawn(move || {
-            let mut nvim_handler = NvimHandler::new();
-            nvim_handler.revc(Arc::clone(&preview));
+            nvim_handler.revc();
         });
     }
 }

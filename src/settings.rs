@@ -8,6 +8,10 @@ use std::io::prelude::*;
 use std::sync::Mutex;
 use std::sync::RwLock;
 
+pub struct InMemoryTheme {
+    pub theme: Theme,
+    pub contents: String,
+}
 lazy_static! {
 
     static ref SETTINGS: RwLock<Config> = RwLock::new({
@@ -19,7 +23,7 @@ lazy_static! {
 
     // Unfortunatly is seems webkit does accept any href from the file system, to hack our way around this we just preload css and hljs
     // see : https://github.com/gtk-rs/webkit2gtk-rs/issues/56
-    pub static ref THEME: Mutex<String> = {
+    pub static ref THEME: Mutex<InMemoryTheme> = {
         let config_dir = dirs::config_dir().unwrap();
         let config_dir = config_dir
             .to_str()
@@ -28,7 +32,10 @@ lazy_static! {
         let mut style = File::open(&format!("{}/illumination/themes/default/style.css", config_dir)).expect("Error opening default style.css");
         let mut contents = String::new();
         style.read_to_string(&mut contents).expect("Unable to write css theme");
-        Mutex::new(contents)
+        Mutex::new(InMemoryTheme {
+            theme: Theme::Default,
+            contents
+        })
     };
 
     pub static ref HLJS_CSS: String = {
@@ -82,7 +89,8 @@ pub fn set_theme(theme: Theme) {
     style
         .read_to_string(&mut contents)
         .expect("Unable to write css theme");
-    *THEME.lock().unwrap() = contents;
+
+    *THEME.lock().unwrap() = InMemoryTheme { theme, contents };
 }
 
 // dump config.toml
