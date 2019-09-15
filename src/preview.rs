@@ -1,8 +1,8 @@
+use crate::settings::JS;
+use crate::settings::THEME;
 use horrorshow::helper::doctype;
 use horrorshow::Raw;
 use pulldown_cmark::{html, Options, Parser};
-use crate::settings::THEME;
-use crate::settings::JS;
 
 /// In goes markdown text; out comes HTML text.
 fn mark_to_html(markdown: &str) -> String {
@@ -19,7 +19,6 @@ fn mark_to_html(markdown: &str) -> String {
 
 /// In goes markdown text; out comes stylish HTML text.
 pub fn render(markdown: &str, scroll: i64) -> String {
-
     let scroll = format!(
         "function scrollDown() {{ window.scrollTo(0, {}); }}; window.onload = scrollDown;",
         scroll

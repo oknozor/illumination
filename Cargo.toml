@@ -3,6 +3,7 @@ name = "illumination"
 version = "0.2.0"
 authors = ["okno <paul.delafosse@protonmail.com>"]
 edition = "2018"
+build = "build/build.rs"
 
 [dependencies]
 neovim-lib = "0.6"
@@ -15,6 +16,12 @@ glib= "0.8"
 gio = "0.7"
 config = "0.9"
 lazy_static = "1.4.0"
+dirs = "2.0"
+
+
+[build-dependencies]
+dirs = "2.0"
+
 
 [dependencies.log]
 version = "0.4"
