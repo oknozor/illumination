@@ -1,5 +1,5 @@
 mod app;
-mod content;
+pub(crate) mod content;
 mod header;
 
 pub use self::app::App;
