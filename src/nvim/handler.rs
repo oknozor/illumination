@@ -2,27 +2,28 @@ use std::sync::{Arc, Mutex};
 
 use crate::html::theme::Theme;
 use crate::nvim::handler::Message::*;
-use crate::preview::render;
 use crate::settings::THEME;
 use fragile::Fragile;
 use neovim_lib::{Neovim, NeovimApi, Session, UiAttachOptions};
 use webkit2gtk::WebView;
-use webkit2gtk::*;
 
 type SharedWebView = Arc<Mutex<Fragile<WebView>>>;
 type SharedF64 = Arc<Mutex<f64>>;
 
+pub enum GtkMessage {
+    Redraw(String),
+}
+
 pub struct NvimHandler {
     nvim: Neovim,
+    sender: glib::Sender<GtkMessage>,
     current_theme: Theme,
-    webview: SharedWebView,
     scroll_value: SharedF64,
 }
 
 enum Message {
     Redraw,
     BufferUpdate,
-    ThemeUpdate,
     Unknown(String),
 }
 
@@ -31,14 +32,13 @@ impl From<String> for Message {
         match &event[..] {
             "redraw" => Redraw,
             "nvim_buf_lines_event" => BufferUpdate,
-            "theme-update" => ThemeUpdate,
             _ => Message::Unknown(event),
         }
     }
 }
 
 impl NvimHandler {
-    pub fn new(webview: SharedWebView) -> NvimHandler {
+    pub fn new(sender: glib::Sender<GtkMessage>) -> NvimHandler {
         #[cfg(debug_assertions)]
         let session = Session::new_tcp("127.0.0.1:6666").unwrap();
 
@@ -48,61 +48,10 @@ impl NvimHandler {
         let nvim = Neovim::new(session);
         NvimHandler {
             nvim,
+            sender,
             current_theme: THEME.lock().unwrap().theme,
-            webview,
             scroll_value: Arc::new(Mutex::new(f64::from(0))),
         }
-    }
-
-    // call javascript scrollTo(..)
-    pub fn scroll_to(&mut self, webview: SharedWebView, scroll_target: f64) {
-        glib::MainContext::default().invoke(move || {
-            let webview_lock = webview.lock().unwrap();
-            let js_scroll = &format!("window.scrollTo(0, {})", scroll_target as i64);
-
-            webview_lock
-                .get()
-                .run_javascript(js_scroll, None::<&gio::Cancellable>, move |_msg| {
-                    info!("webkit window scrolling to : {} px", scroll_target);
-                });
-        });
-    }
-
-    // get current scroll position from the webview
-    pub fn update_scroll_pos(&mut self, webview: SharedWebView, js_window_height_inner: SharedF64) {
-        glib::MainContext::default().invoke(move || {
-            let webview_lock = webview.lock().unwrap();
-            let context = Fragile::new(webview_lock.get().get_javascript_global_context().unwrap());
-
-            webview_lock.get().run_javascript(
-                "document.documentElement.offsetHeight",
-                None::<&'static gio::Cancellable>,
-                move |msg| {
-                    let current_webkit_win_height =
-                        msg.unwrap().get_value().unwrap().to_number(context.get());
-                    info!(
-                        "webkit window scroll height : {:?}",
-                        current_webkit_win_height
-                    );
-                    let mut webkit_height_lock = js_window_height_inner.lock().unwrap();
-                    *webkit_height_lock = current_webkit_win_height.unwrap();
-                },
-            );
-        });
-    }
-
-    // Redraw gtk webview
-    pub fn draw(&mut self) {
-        let buffer = self.curr_buff_to_string();
-        let webview = self.webview.clone();
-        let scroll_value = self.scroll_value.clone();
-
-        glib::MainContext::default().invoke(move || {
-            let webview_lock = webview.lock().unwrap();
-            webview_lock
-                .get()
-                .load_html(&render(&buffer, *scroll_value.lock().unwrap() as i64), None);
-        });
     }
 
     // convert buffer lines to String
@@ -120,9 +69,14 @@ impl NvimHandler {
     pub fn revc(&mut self) {
         // Start the rpc event loop
         let receiver = self.nvim.session.start_event_loop_channel();
+        let (g_sender, _) = glib::MainContext::channel::<GtkMessage>(glib::PRIORITY_DEFAULT);
 
         // Attach current buffer event to the channel
         let mut current_buffer = self.nvim.get_current_buf().unwrap();
+        let buffer = self.curr_buff_to_string();
+
+        let _ = g_sender.send(GtkMessage::Redraw(buffer));
+
         current_buffer.attach(&mut self.nvim, true, vec![]).unwrap();
 
         // Attach to UI just to get redraw notification, so we make sure every options is deactivated
@@ -188,15 +142,6 @@ impl NvimHandler {
                 current_buffer.attach(&mut self.nvim, true, vec![]).unwrap();
             };
 
-            info!(
-                "HANDLER -> Theme : {}",
-                THEME.lock().unwrap().theme.as_str()
-            );
-            if THEME.lock().unwrap().theme != self.current_theme {
-                info!("Updating theme in the UI");
-                self.draw();
-            }
-
             // Update on buff_line_event
             match Message::from(event) {
                 Redraw => {
@@ -215,19 +160,14 @@ impl NvimHandler {
                         (*js_window_height_inner / 100.0) * cursor_pos_percent as f64;
                     info!("webkit inner height {:?}", js_window_height_inner);
 
-                    self.scroll_to(self.webview.clone(), scroll_target);
-
                     let js_window_height_inner = Arc::clone(&js_window_height);
-                    let fragile_webview = self.webview.clone();
+                }
 
-                    self.update_scroll_pos(fragile_webview, js_window_height_inner)
-                }
                 BufferUpdate => {
-                    self.draw();
+                    let buffer = self.curr_buff_to_string();
+                    let _res = self.sender.send(GtkMessage::Redraw(buffer));
                 }
-                ThemeUpdate => {
-                    info!("ALMOST THERE");
-                }
+
                 Unknown(_err_event) => {
                     // We can safely ignore unkown rpc message
                 }
