@@ -1,4 +1,3 @@
-use crate::preview::render;
 use fragile::Fragile;
 use gtk::*;
 use std::sync::Arc;
