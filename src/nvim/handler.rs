@@ -1,14 +1,7 @@
 use std::sync::{Arc, Mutex};
 
-use crate::html::theme::Theme;
 use crate::nvim::handler::Message::*;
-use crate::settings::THEME;
-use fragile::Fragile;
 use neovim_lib::{Neovim, NeovimApi, Session, UiAttachOptions};
-use webkit2gtk::WebView;
-
-type SharedWebView = Arc<Mutex<Fragile<WebView>>>;
-type SharedF64 = Arc<Mutex<f64>>;
 
 pub enum GtkMessage {
     Redraw(String),
@@ -17,8 +10,6 @@ pub enum GtkMessage {
 pub struct NvimHandler {
     nvim: Neovim,
     sender: glib::Sender<GtkMessage>,
-    current_theme: Theme,
-    scroll_value: SharedF64,
 }
 
 enum Message {
@@ -46,12 +37,7 @@ impl NvimHandler {
         let session = Session::new_parent().unwrap();
 
         let nvim = Neovim::new(session);
-        NvimHandler {
-            nvim,
-            sender,
-            current_theme: THEME.lock().unwrap().theme,
-            scroll_value: Arc::new(Mutex::new(f64::from(0))),
-        }
+        NvimHandler { nvim, sender }
     }
 
     // convert buffer lines to String
@@ -90,8 +76,6 @@ impl NvimHandler {
         ui_options.set_rgb(false);
         ui_options.set_wildmenu_external(false);
         self.nvim.ui_attach(100, 100, &ui_options).unwrap();
-
-        let js_window_height = Arc::new(Mutex::new(0.0));
 
         // Listen for updates
         for (event, _values) in receiver {
@@ -145,22 +129,8 @@ impl NvimHandler {
             // Update on buff_line_event
             match Message::from(event) {
                 Redraw => {
-                    let js_window_height_inner = Arc::clone(&js_window_height);
-                    info!(
-                        "cursor offset {}, buffer lenght {}",
-                        cursor_offset, total_lenght
-                    );
-
-                    let cursor_pos_percent = (cursor_offset as f64 / total_lenght as f64) * 100.0;
-                    info!("cursor at {}%", cursor_pos_percent);
-
-                    let js_window_height_inner = js_window_height_inner.lock().unwrap();
-
-                    let scroll_target =
-                        (*js_window_height_inner / 100.0) * cursor_pos_percent as f64;
-                    info!("webkit inner height {:?}", js_window_height_inner);
-
-                    let js_window_height_inner = Arc::clone(&js_window_height);
+                    let buffer = self.curr_buff_to_string();
+                    let _res = self.sender.send(GtkMessage::Redraw(buffer));
                 }
 
                 BufferUpdate => {

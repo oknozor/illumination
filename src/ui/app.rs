@@ -4,7 +4,6 @@ use crate::preview::render;
 use crate::settings;
 use std::sync::{Arc, Mutex};
 use std::{process, thread};
-use webkit2gtk::WebView;
 use webkit2gtk::*;
 
 use gtk::*;
@@ -13,7 +12,6 @@ use super::content::Content;
 
 use super::header::Header;
 use crate::nvim::handler::NvimHandler;
-use fragile::Fragile;
 
 pub struct App {
     pub window: Window,
@@ -54,14 +52,15 @@ impl App {
     pub fn connect_nvim(&self) {
         let (sender, receiver) = glib::MainContext::channel::<GtkMessage>(glib::PRIORITY_DEFAULT);
         let mut nvim_handler = NvimHandler::new(sender);
+
         let cur_buffer = Arc::new(Mutex::new(String::new()));
-        let cur_buffer_a = Arc::clone(&cur_buffer);
+        let cur_buffer_ref = Arc::clone(&cur_buffer);
 
         let webkit = self.content.preview.clone();
         receiver.attach(None, move |msg| {
             match msg {
                 GtkMessage::Redraw(buffer) => {
-                    *cur_buffer_a.lock().unwrap() = buffer.clone();
+                    *cur_buffer_ref.lock().unwrap() = buffer.clone();
                     webkit.load_html(&render(&buffer, 0), None);
                 }
             };
@@ -70,7 +69,7 @@ impl App {
         });
 
         let combo = self.header.theme_selector.clone();
-        let cur_buffer_b = Arc::clone(&cur_buffer);
+        let cur_buffer_ref = Arc::clone(&cur_buffer);
         let webkit = self.content.preview.clone();
 
         combo.connect_changed(move |combo| {
@@ -78,7 +77,7 @@ impl App {
             let selection = selection.as_str();
             info!("changing theme to : {}", selection);
             settings::set_theme(Theme::from(selection));
-            webkit.load_html(&render(&cur_buffer_b.lock().unwrap(), 0), None);
+            webkit.load_html(&render(&cur_buffer_ref.lock().unwrap(), 0), None);
         });
 
         thread::spawn(move || {
