@@ -71,6 +71,9 @@ impl App {
                     webkit.load_html(&render(&buffer, 0), None);
                     window.set_title(title.as_str());
                 }
+                GtkMessage::RustDocOpen => {
+                    webkit.load_html("<p>Hello Rust doc </p>", None);
+                }
             };
 
             glib::Continue(true)
