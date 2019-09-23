@@ -1,6 +1,7 @@
 mkdir -p .local/share/nvim/site/plugin/
 mv neovim/illumination .local/share/nvim/site/plugin/illumination.vim
 mkdir -p themes/default
+
 curl -X GET https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js > themes/default/hljs.min.js
 curl -X GET https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/rust.min.js > themes/default/hljs-rust.js
 curl -X GET https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css > themes/default/hljs.min.css

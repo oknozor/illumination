@@ -5,8 +5,9 @@ if !exists('s:nvimMdJobId')
 endif
 
 function! s:configureCommands()
-    command! -nargs=0 Render :call s:render()
-    command! -nargs=0 RenderStop :call s:render_stop()
+    command! -nargs=0 IlluRender :call s:render()
+    command! -nargs=0 IlluClose :call s:render_stop()
+    command! -nargs=+ IlluRustDocOpen :call s:render(<f-args>)
 endfunction
 
 call s:configureCommands() 

@@ -9,6 +9,7 @@ extern crate lazy_static;
 extern crate config;
 extern crate dirs;
 
+mod doc_lang;
 mod html;
 mod nvim;
 mod preview;
@@ -25,7 +26,6 @@ fn main() {
     settings::show();
 
     let app = App::new();
-
     app.window.show_all();
     app.connect_nvim();
     gtk::main();

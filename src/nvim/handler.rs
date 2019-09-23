@@ -1,10 +1,9 @@
-use std::sync::{Arc, Mutex};
-
 use crate::nvim::handler::Message::*;
 use neovim_lib::{Neovim, NeovimApi, Session, UiAttachOptions};
 
 pub enum GtkMessage {
     Redraw(String),
+    BufferChanged(String, String),
 }
 
 pub struct NvimHandler {
@@ -12,8 +11,10 @@ pub struct NvimHandler {
     sender: glib::Sender<GtkMessage>,
 }
 
+// see neovim :help ui-events
 enum Message {
     Redraw,
+    Flush,
     BufferUpdate,
     Unknown(String),
 }
@@ -22,6 +23,7 @@ impl From<String> for Message {
     fn from(event: String) -> Self {
         match &event[..] {
             "redraw" => Redraw,
+            "flush" => Flush,
             "nvim_buf_lines_event" => BufferUpdate,
             _ => Message::Unknown(event),
         }
@@ -50,6 +52,11 @@ impl NvimHandler {
             .iter()
             .map(|line| format!("{}\n", line.to_owned()))
             .collect::<String>()
+    }
+
+    fn get_curr_buffer_name(&mut self) -> String {
+        let buffer = self.nvim.get_current_buf().unwrap();
+        buffer.get_name(&mut self.nvim).unwrap()
     }
 
     pub fn revc(&mut self) {
@@ -87,7 +94,7 @@ impl NvimHandler {
                 .get_offset(&mut self.nvim, cursor.unwrap().0)
                 .unwrap_or(0);
             let total_line = current_buffer.line_count(&mut self.nvim).unwrap();
-            let total_lenght = current_buffer
+            let _total_lenght = current_buffer
                 .get_offset(&mut self.nvim, total_line)
                 .unwrap();
             let win_height = current_win.get_height(&mut self.nvim);
@@ -117,7 +124,7 @@ impl NvimHandler {
                     "Buffer changed detached buffer [{}], reattaching buffer, id=[{}], name= [{}]",
                     current_buffer_id,
                     active_buffer_id,
-                    new_buffer_name.unwrap_or("Unknown".into())
+                    new_buffer_name.unwrap_or_else(|_| "unknown".to_string())
                 );
                 current_buffer
                     .detach(&mut self.nvim)
@@ -126,20 +133,31 @@ impl NvimHandler {
                 current_buffer.attach(&mut self.nvim, true, vec![]).unwrap();
             };
 
-            // Update on buff_line_event
             match Message::from(event) {
                 Redraw => {
+                    info!("Received rpc message : redraw");
                     let buffer = self.curr_buff_to_string();
-                    let _res = self.sender.send(GtkMessage::Redraw(buffer));
+                    let buffer_name = self.get_curr_buffer_name();
+                    let _res = self
+                        .sender
+                        .send(GtkMessage::BufferChanged(buffer_name, buffer));
                 }
 
+                // Update on buff_line_event
                 BufferUpdate => {
+                    info!("Received rpc message : nvim_buf_lines_event");
                     let buffer = self.curr_buff_to_string();
                     let _res = self.sender.send(GtkMessage::Redraw(buffer));
                 }
 
-                Unknown(_err_event) => {
+                // FIXME: why is this not sent ?
+                Message::Flush => {
+                    info!("Received rpc message : flush");
+                }
+
+                Unknown(u_event) => {
                     // We can safely ignore unkown rpc message
+                    info!("Received unknow rpc message : {}", u_event);
                 }
             };
         }
