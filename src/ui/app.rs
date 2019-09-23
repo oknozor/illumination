@@ -57,22 +57,30 @@ impl App {
         let cur_buffer_ref = Arc::clone(&cur_buffer);
 
         let webkit = self.content.preview.clone();
+        let window = self.window.clone();
+
+        // Attach gtk main thread to the nvim handler sender
         receiver.attach(None, move |msg| {
             match msg {
                 GtkMessage::Redraw(buffer) => {
                     *cur_buffer_ref.lock().unwrap() = buffer.clone();
                     webkit.load_html(&render(&buffer, 0), None);
                 }
+                GtkMessage::BufferChanged(title, buffer) => {
+                    *cur_buffer_ref.lock().unwrap() = buffer.clone();
+                    webkit.load_html(&render(&buffer, 0), None);
+                    window.set_title(title.as_str());
+                }
             };
 
             glib::Continue(true)
         });
 
-        let combo = self.header.theme_selector.clone();
+        let theme_selector = self.header.theme_selector.clone();
         let cur_buffer_ref = Arc::clone(&cur_buffer);
         let webkit = self.content.preview.clone();
 
-        combo.connect_changed(move |combo| {
+        theme_selector.connect_changed(move |combo| {
             let selection = combo.get_active_text().unwrap();
             let selection = selection.as_str();
             info!("changing theme to : {}", selection);

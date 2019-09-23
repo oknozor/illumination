@@ -14,7 +14,7 @@ impl Header {
         Theme::names()
             .iter()
             .for_each(|theme| theme_selector.append_text(theme));
-        theme_selector.set_active(Some(0));
+        theme_selector.set_active(Some(1));
 
         container.add(&theme_selector);
         container.set_title(Some("Illumination"));

@@ -12,6 +12,7 @@ pub struct InMemoryTheme {
     pub theme: Theme,
     pub contents: String,
 }
+
 lazy_static! {
 
     static ref SETTINGS: RwLock<Config> = RwLock::new({
@@ -29,9 +30,13 @@ lazy_static! {
             .to_str()
             .unwrap();
 
-        let mut style = File::open(&format!("{}/illumination/themes/default/style.css", config_dir)).expect("Error opening default style.css");
+        let mut style = File::open(&format!("{}/illumination/themes/default/style.css", config_dir))
+            .expect("Error opening default style.css");
+
         let mut contents = String::new();
+
         style.read_to_string(&mut contents).expect("Unable to write css theme");
+
         Mutex::new(InMemoryTheme {
             theme: Theme::Default,
             contents
@@ -40,13 +45,18 @@ lazy_static! {
 
     pub static ref HLJS_CSS: String = {
         let config_dir = dirs::config_dir().unwrap();
+
         let config_dir = config_dir
             .to_str()
             .unwrap();
 
-        let mut hljs_css = File::open(&format!("{}/illumination/themes/default/hljs.min.css", config_dir)).expect("Error opening hljs.min.css");
+        let mut hljs_css = File::open(&format!("{}/illumination/themes/default/hljs.min.css", config_dir))
+            .expect("Error opening hljs.min.css");
+
         let mut contents = String::new();
-        hljs_css.read_to_string(&mut contents).expect("Unable to write hljs css");
+        hljs_css.read_to_string(&mut contents)
+            .expect("Unable to write hljs css");
+
         contents
     };
 
@@ -56,11 +66,17 @@ lazy_static! {
             .to_str()
             .unwrap();
 
-        let mut hljs = File::open(format!("{}/illumination/themes/default/hljs.min.js", config_dir)).expect("Error opening hljs.min.js");
-        let mut hljs_rust = File::open(format!("{}/illumination/themes/default/hljs-rust.js", config_dir)).expect("Error opening rust hljs-rust.js");
+        let mut hljs = File::open(format!("{}/illumination/themes/default/hljs.min.js", config_dir))
+            .expect("Error opening hljs.min.js");
+
+        let mut hljs_rust = File::open(format!("{}/illumination/themes/default/hljs-rust.js", config_dir))
+            .expect("Error opening rust hljs-rust.js");
+
         let mut contents = String::new();
+
         hljs.read_to_string(&mut contents).expect("Unable to write hljs");
         hljs_rust.read_to_string(&mut contents).expect("Unable to write hljs rust");
+
         contents
     };
 
@@ -86,6 +102,7 @@ pub fn set_theme(theme: Theme) {
     ))
     .expect("Error opening default style.css");
     let mut contents = String::new();
+
     style
         .read_to_string(&mut contents)
         .expect("Unable to write css theme");
