@@ -38,9 +38,11 @@ impl From<String> for Message {
 
 impl NvimHandler {
     pub fn new(sender: glib::Sender<GtkMessage>) -> NvimHandler {
+        // Start a headless client (debug)
         #[cfg(debug_assertions)]
         let session = Session::new_tcp("127.0.0.1:6666").unwrap();
 
+        // Spaw a child process (release) 
         #[cfg(not(debug_assertions))]
         let session = Session::new_parent().unwrap();
 
