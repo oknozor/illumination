@@ -72,7 +72,7 @@ impl App {
                     window.set_title(title.as_str());
                 }
                 GtkMessage::RustDocOpen => {
-                    webkit.load_html("<p>Hello Rust doc </p>", None);
+                    webkit.load_uri("file:///home/okno/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/share/doc/rust/html/std/fs/struct.File.html");
                 }
             };
 

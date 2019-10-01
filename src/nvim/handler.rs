@@ -13,11 +13,11 @@ pub struct NvimHandler {
     lock: bool,
 }
 
-// see neovim :help ui-events
+// see neovim :help ui-events for redraw & buffer_update messages
 enum Message {
     Redraw,
-    Flush,
     BufferUpdate,
+    Flush,
     RustDocOpen,
     Lock,
     Unknown(String),
@@ -42,7 +42,7 @@ impl NvimHandler {
         #[cfg(debug_assertions)]
         let session = Session::new_tcp("127.0.0.1:6666").unwrap();
 
-        // Spaw a child process (release) 
+        // Spaw a child process (release)
         #[cfg(not(debug_assertions))]
         let session = Session::new_parent().unwrap();
 
