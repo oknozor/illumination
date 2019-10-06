@@ -1,5 +1,5 @@
 use crate::nvim::handler::Message::*;
-use neovim_lib::{Integer, Neovim, NeovimApi, Session, UiAttachOptions, Value};
+use neovim_lib::{Neovim, NeovimApi, Session, UiAttachOptions};
 
 pub enum GtkMessage {
     Redraw(String),
