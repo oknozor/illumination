@@ -12,6 +12,7 @@ use super::content::Content;
 
 use super::header::Header;
 use crate::nvim::handler::NvimHandler;
+use crate::doc_lang;
 
 pub struct App {
     pub window: Window,
@@ -72,7 +73,9 @@ impl App {
                     window.set_title(title.as_str());
                 }
                 GtkMessage::RustDocOpen => {
-                    webkit.load_uri("file:///home/okno/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/share/doc/rust/html/std/fs/struct.File.html");
+                    let uri = doc_lang::rustdoc::get_uri()
+                    .expect("Unable to get doc path");
+                    webkit.load_uri(&format!("file://{}", &uri));
                 }
             };
 
