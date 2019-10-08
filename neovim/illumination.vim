@@ -5,10 +5,10 @@ if !exists('s:nvimMdJobId')
 endif
 
 function! s:configureCommands()
-    command! -nargs=0 IlluRender :call s:render()
-    command! -nargs=0 IlluClose :call s:render_stop()
-    command! -nargs=0 IlluLock :call s:lock()
-    command! -nargs=1 IlluRustDocOpen :call s:docopen(<f-args>)
+    command! -nargs=0 IlRender :call s:render()
+    command! -nargs=0 IlClose :call s:render_stop()
+    command! -nargs=0 IlLock :call s:lock()
+    command! -nargs=1 IlRustDocOpen :call s:docopen()
     command! -nargs=0 IllDebug  :call s:debug()
 endfunction
 
@@ -43,7 +43,7 @@ function! s:lock()
     call rpcnotify(s:nvimMdJobId, s:Lock)
 endfunction
 
-function! s:docopen(tag)
+function! s:docopen()
   call rpcnotify(s:nvimMdJobId, s:RustDocOpen)
 endfunction
 
