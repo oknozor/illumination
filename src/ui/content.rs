@@ -1,7 +1,4 @@
-use fragile::Fragile;
 use gtk::*;
-use std::sync::Arc;
-use std::sync::Mutex;
 use webkit2gtk::WebView;
 use webkit2gtk::*;
 
@@ -23,31 +20,16 @@ impl Content {
             scroll_value: 0,
         }
     }
+}
 
-    pub fn scroll_to(&self) {
-        let scroll = self.scroll_value;
-        let js_scroll = &format!("window.scrollTo(0, {})", scroll);
-
-        self.preview
+    pub fn scroll_to(webview: &WebView, to: i64) {
+        let js_scroll = &format!(
+            " let scroll_pos = document.documentElement.offsetHeight; \
+             window.scrollTo(0, {})",
+            to
+        );
+        webview
             .run_javascript(js_scroll, None::<&gio::Cancellable>, move |_msg| {
-                info!("webkit window scrolling to : {} px", scroll);
+                info!("webkit window scrolling to : {} px", to);
             });
     }
-
-    pub fn update_scroll_pos(&mut self) {
-        let webview = Arc::new(Mutex::new(Fragile::new(self.preview.clone())));
-        let webview_lock = webview.lock().unwrap();
-        let context = Fragile::new(webview_lock.get().get_javascript_global_context().unwrap());
-        let mut wk_height: i64 = 0;
-        webview_lock.get().run_javascript(
-            "document.documentElement.offsetHeight",
-            None::<&'static gio::Cancellable>,
-            move |msg| {
-                let current_wk_height = msg.unwrap().get_value().unwrap().to_number(context.get());
-                info!("webkit window scroll height : {:?}", current_wk_height);
-                wk_height = current_wk_height.unwrap() as i64;
-            },
-        );
-        self.scroll_value = wk_height
-    }
-}
