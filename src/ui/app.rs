@@ -11,6 +11,7 @@ use gtk::*;
 use super::content::Content;
 
 use super::header::Header;
+use super::content::*;
 use crate::nvim::handler::NvimHandler;
 use crate::doc_lang;
 
@@ -70,6 +71,7 @@ impl App {
                 GtkMessage::BufferChanged(title, buffer) => {
                     *cur_buffer_ref.lock().unwrap() = buffer.clone();
                     webkit.load_html(&render(&buffer, 0), None);
+                    scroll_to(&webkit, 500);
                     window.set_title(title.as_str());
                 }
                 GtkMessage::RustDocOpen => {
