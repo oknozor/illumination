@@ -5,11 +5,11 @@ if !exists('s:nvimMdJobId')
 endif
 
 function! s:configureCommands()
-    command! -nargs=0 IlRender :call s:render()
-    command! -nargs=0 IlClose :call s:render_stop()
-    command! -nargs=0 IlLock :call s:lock()
-    command! -nargs=1 IlRustDocOpen :call s:docopen()
-    command! -nargs=0 IllDebug  :call s:debug()
+    command! -nargs=0 Illuminate :call s:render()
+    command! -nargs=0 IlluminateClose :call s:render_stop()
+    command! -nargs=0 IlluminateLock :call s:lock()
+    command! -nargs=1 IlluminateRustDoc :call s:docopen()
+    command! -nargs=0 IlluminateDebug :call s:debug()
 endfunction
 
 call s:configureCommands() 
