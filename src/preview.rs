@@ -19,9 +19,13 @@ fn mark_to_html(markdown: &str) -> String {
 }
 
 /// In goes markdown text; out comes stylish HTML text.
-pub fn render(markdown: &str, scroll: i64) -> String {
+pub fn render(markdown: &str, scroll: f64) -> String {
     let scroll = format!(
-        "function scrollDown() {{ window.scrollTo(0, {}); }}; window.onload = scrollDown;",
+        r#"
+        let target = document.documentElement.scrollHeight / 100 * {}; 
+        function scrollDown() {{ window.scrollTo(0, target); }}; 
+        window.onload = scrollDown;
+        "#,
         scroll
     );
 
