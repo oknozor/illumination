@@ -1,18 +1,26 @@
 # Nvim Illumination : A lightweight GTK live preview for your notes
+
+
 ---
+> An illuminated manuscript is a manuscript in which the text is supplemented with such decoration as initials, borders (marginalia) and miniature illustrations. In the strictest definition, the term refers only to manuscripts decorated with either gold or silver; but in both common usage and modern scholarship, the term refers to any decorated or illustrated manuscript from Western traditions.
 
-Nvim Illumination is a simple Neovim plugin to render buffers in a WebKit2Gtk window. Since it uses the Neovim rpc-api to send buffer updates, **it will not work with vim**.
+From Wikipedia, the free encyclopedia
 
-Note that unlike many note rendering plugins Illumination does not render files, it renders your buffer directly via nvim rpc api, it means you don't need to save the current buffer to render your notes, it is really live!  
+--- 
+Nvim Illumination is a simple Neovim plugin to render buffers in a WebKit2Gtk window. Since it uses the Neovim rpc-api to send buffer updates, ⚠️ **it will not work with vim** ⚠️. 
 
-Issues are welcome but Illumination is at a early stage of development, before submiting one please read the [Roadmap](#roadmap) section.  
+Note that unlike many note rendering plugins Illumination does not render files, it renders your buffer directly via [nvim rpc api](https://neovim.io/doc/user/api.html), it means you don't need to save the current buffer to render your notes, it is really live!  
+
+Issues and PRs are welcome but Illumination is at a early stage of development, before submiting one please read the [Roadmap](#roadmap) section.  
 
 ![example screenshot](screenshots/demo.png)
 
 ## Intallation
+
+### Manual installation
 ---
 
-1. Compile the rust binary and add it to your path : 
+1. Compile the rust binary and add it to your path :
 
 ```sh 
 git clone  https://github.com/oknozor/illumination/ 
