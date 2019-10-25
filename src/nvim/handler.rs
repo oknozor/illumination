@@ -2,8 +2,9 @@ use crate::nvim::handler::Message::*;
 use neovim_lib::{Neovim, NeovimApi, Session, UiAttachOptions};
 
 pub enum GtkMessage {
-    Redraw(String, f64),
-    BufferChanged(String, String, f64),
+    Redraw(f64),                        // scroll target %
+    BufferUpdate(String, f64),          // (buffer content, scroll target %)
+    BufferDetached(String, String, f64),// (buffer name, buffer content, scroll target %)
     RustDocOpen,
 }
 
@@ -17,7 +18,7 @@ pub struct NvimHandler {
 enum Message {
     Redraw,
     BufferUpdate,
-    Flush,
+    BufferDetached,
     RustDocOpen,
     Lock,
     Unknown(String),
@@ -27,8 +28,8 @@ impl From<String> for Message {
     fn from(event: String) -> Self {
         match &event[..] {
             "redraw" => Redraw,
-            "flush" => Flush,
             "nvim_buf_lines_event" => BufferUpdate,
+            "nvim_buf_detach_event" => BufferDetached,
             "rust_doc_open" => RustDocOpen,
             "lock" => Lock,
             _ => Message::Unknown(event),
@@ -54,6 +55,7 @@ impl NvimHandler {
         }
     }
 
+    // manualy connect to nvim rpc process in debug mode
     #[cfg(debug_assertions)]
     fn set_debug_proccess_id(&mut self) {
         let info = self.nvim.get_api_info();
@@ -105,7 +107,7 @@ impl NvimHandler {
         let buffer = self.curr_buff_to_string();
 
         // Send the first draw message
-        let _ = g_sender.send(GtkMessage::Redraw(buffer, 0.0));
+        let _ = g_sender.send(GtkMessage::BufferUpdate(buffer, 0.0));
 
         // Attach current buffer to the ui
         current_buffer.attach(&mut self.nvim, true, vec![]).unwrap();
@@ -148,6 +150,7 @@ impl NvimHandler {
             info!("total line  : {:?}", total_line);
             info!("total lenght  : {:?}", _total_lenght);
             info!("cursor offset : {:?}", cursor_offset);
+
             let percent_offset: f64 = (cursor_offset as f64 / _total_lenght as f64) * 100.0;
             info!("percent_offset {:?}", percent_offset);
 
@@ -160,53 +163,46 @@ impl NvimHandler {
 
             // Reattach the new buffer on change
             let active_buffer_id = current_buffer.get_number(&mut self.nvim).unwrap();
-            if active_buffer_id != current_buffer_id {
-                let new_buffer_name = current_buffer.get_name(&mut self.nvim);
-                info!(
-                    "Buffer changed detached buffer [{}], reattaching buffer, id=[{}], name= [{}]",
-                    current_buffer_id,
-                    active_buffer_id,
-                    new_buffer_name.unwrap_or_else(|_| "unknown".to_string())
-                );
-                current_buffer
-                    .detach(&mut self.nvim)
-                    .expect("Unable to detach buffer");
-                current_buffer = self.nvim.get_current_buf().unwrap();
-                current_buffer.attach(&mut self.nvim, true, vec![]).unwrap();
-            };
+            if active_buffer_id != current_buffer_id {};
 
             // TODO : fix redraw vs update
             match Message::from(event) {
                 Redraw if !self.lock => {
                     info!("Received rpc message : redraw");
+                    let _res = self.sender.send(GtkMessage::Redraw(percent_offset));
+                }
+
+                // see : nvim_buf_lines_event
+                BufferUpdate if !self.lock => {
+                    info!("Received rpc message : nvim_buf_lines_event");
                     let buffer = self.curr_buff_to_string();
-                    let buffer_name = self.get_curr_buffer_name();
                     let _res = self
                         .sender
-                        .send(GtkMessage::BufferChanged(buffer_name, buffer, percent_offset));
+                        .send(GtkMessage::BufferUpdate(buffer, percent_offset));
                 }
 
-                // Update on buff_line_event
-                BufferUpdate => {
-                    if !self.lock {
-                        info!("Received rpc message : nvim_buf_lines_event");
-                        let buffer = self.curr_buff_to_string();
-                        let _res = self.sender.send(GtkMessage::Redraw(buffer, percent_offset));
-                    }
+                // see : help nvim_buf_detach_event
+                BufferDetached => {
+                    current_buffer
+                        .detach(&mut self.nvim)
+                        .expect("Unable to detach buffer");
+                    current_buffer = self.nvim.get_current_buf().unwrap();
+                    current_buffer.attach(&mut self.nvim, true, vec![]).unwrap();
+
+                    let name = self.get_curr_buffer_name();
+                    let buffer = self.curr_buff_to_string();
+                    let _res = self
+                        .sender
+                        .send(GtkMessage::BufferDetached(name, buffer, percent_offset));
                 }
 
-                // FIXME: why is this not sent ?
-                Message::Flush => {
-                    info!("Received rpc message : flush");
+                Message::Lock => {
+                    self.toggle_lock();
                 }
 
                 Message::RustDocOpen => {
                     self.toggle_lock();
                     let _res = self.sender.send(GtkMessage::RustDocOpen);
-                }
-
-                Message::Lock => {
-                    self.toggle_lock();
                 }
 
                 Message::Unknown(u_event) => {

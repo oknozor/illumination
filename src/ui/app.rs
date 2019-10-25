@@ -11,9 +11,8 @@ use gtk::*;
 use super::content::Content;
 
 use super::header::Header;
-use super::content::*;
-use crate::nvim::handler::NvimHandler;
 use crate::doc_lang;
+use crate::nvim::handler::NvimHandler;
 
 pub struct App {
     pub window: Window,
@@ -62,21 +61,33 @@ impl App {
         let window = self.window.clone();
 
         // Attach gtk main thread to the nvim handler sender
+        // FIXME : scroll value for update and redraw
+        let mut previous_message_was_not_update = true;
         receiver.attach(None, move |msg| {
             match msg {
-                GtkMessage::Redraw(buffer, scroll_target) => {
-                    *cur_buffer_ref.lock().unwrap() = buffer.clone();
-                    webkit.load_html(&render(&buffer, scroll_target), None);
+                GtkMessage::Redraw(scroll_target) => {
+                    if previous_message_was_not_update {
+                        scroll_to(&webkit, scroll_target);
+                    }
+
+                    previous_message_was_not_update = true;
                 }
-                GtkMessage::BufferChanged(title, buffer, scroll_target) => {
-                    *cur_buffer_ref.lock().unwrap() = buffer.clone();
-                    webkit.load_html(&render(&buffer, scroll_target), None);
-                   // scroll_to(&webkit, 500);
+
+                GtkMessage::BufferUpdate(content, scroll) => {
+                    *cur_buffer_ref.lock().unwrap() = content.clone();
+                    webkit.load_html(&render(&content, scroll), None);
+                    previous_message_was_not_update = false;
+                }
+
+                GtkMessage::BufferDetached(title, content, scroll) => {
+                    *cur_buffer_ref.lock().unwrap() = content.clone();
+                    webkit.load_html(&render(&content, scroll), None);
                     window.set_title(title.as_str());
+                    previous_message_was_not_update = false;
                 }
+
                 GtkMessage::RustDocOpen => {
-                    let uri = doc_lang::rustdoc::get_uri()
-                    .expect("Unable to get doc path");
+                    let uri = doc_lang::rustdoc::get_uri().expect("Unable to get doc path");
                     webkit.load_uri(&format!("file://{}", &uri));
                 }
             };
@@ -100,4 +111,15 @@ impl App {
             nvim_handler.revc();
         });
     }
+}
+
+fn scroll_to(webview: &WebView, to: f64) {
+    let js_scroll = &format!(
+        "window.scrollTo(0, document.documentElement.scrollHeight / 100 * {});",
+        to
+    );
+    webview.run_javascript(js_scroll, None::<&gio::Cancellable>, move |msg| {
+        info!("webkit window scrolling to : {} px", to);
+        info!("js result: {:?} ", msg);
+    });
 }

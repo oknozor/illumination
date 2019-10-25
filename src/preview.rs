@@ -22,8 +22,8 @@ fn mark_to_html(markdown: &str) -> String {
 pub fn render(markdown: &str, scroll: f64) -> String {
     let scroll = format!(
         r#"
-        let target = document.documentElement.scrollHeight / 100 * {}; 
-        function scrollDown() {{ window.scrollTo(0, target); }}; 
+        let target = document.documentElement.scrollHeight / 100 * {};
+        function scrollDown() {{ window.scrollTo(0, target); }};
         window.onload = scrollDown;
         "#,
         scroll
