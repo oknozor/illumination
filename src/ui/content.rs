@@ -21,15 +21,3 @@ impl Content {
         }
     }
 }
-
-    pub fn scroll_to(webview: &WebView, to: i64) {
-        let js_scroll = &format!(
-            " let scroll_pos = document.documentElement.offsetHeight; \
-             window.scrollTo(0, {})",
-            to
-        );
-        webview
-            .run_javascript(js_scroll, None::<&gio::Cancellable>, move |_msg| {
-                info!("webkit window scrolling to : {} px", to);
-            });
-    }
