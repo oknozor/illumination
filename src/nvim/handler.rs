@@ -2,8 +2,8 @@ use crate::nvim::handler::Message::*;
 use neovim_lib::{Neovim, NeovimApi, Session, UiAttachOptions};
 
 pub enum GtkMessage {
-    Redraw(String),
-    BufferChanged(String, String),
+    Redraw(String, f64),
+    BufferChanged(String, String, f64),
     RustDocOpen,
 }
 
@@ -105,7 +105,7 @@ impl NvimHandler {
         let buffer = self.curr_buff_to_string();
 
         // Send the first draw message
-        let _ = g_sender.send(GtkMessage::Redraw(buffer));
+        let _ = g_sender.send(GtkMessage::Redraw(buffer, 0.0));
 
         // Attach current buffer to the ui
         current_buffer.attach(&mut self.nvim, true, vec![]).unwrap();
@@ -145,7 +145,11 @@ impl NvimHandler {
             );
 
             info!("window position : {:?}", win_position);
-            info!("cursor position : {:?}", cursor_offset);
+            info!("total line  : {:?}", total_line);
+            info!("total lenght  : {:?}", _total_lenght);
+            info!("cursor offset : {:?}", cursor_offset);
+            let percent_offset: f64 = (cursor_offset as f64 / _total_lenght as f64) * 100.0;
+            info!("percent_offset {:?}", percent_offset);
 
             let current_buffer_id = self
                 .nvim
@@ -171,6 +175,7 @@ impl NvimHandler {
                 current_buffer.attach(&mut self.nvim, true, vec![]).unwrap();
             };
 
+            // TODO : fix redraw vs update
             match Message::from(event) {
                 Redraw if !self.lock => {
                     info!("Received rpc message : redraw");
@@ -178,7 +183,7 @@ impl NvimHandler {
                     let buffer_name = self.get_curr_buffer_name();
                     let _res = self
                         .sender
-                        .send(GtkMessage::BufferChanged(buffer_name, buffer));
+                        .send(GtkMessage::BufferChanged(buffer_name, buffer, percent_offset));
                 }
 
                 // Update on buff_line_event
@@ -186,7 +191,7 @@ impl NvimHandler {
                     if !self.lock {
                         info!("Received rpc message : nvim_buf_lines_event");
                         let buffer = self.curr_buff_to_string();
-                        let _res = self.sender.send(GtkMessage::Redraw(buffer));
+                        let _res = self.sender.send(GtkMessage::Redraw(buffer, percent_offset));
                     }
                 }
 

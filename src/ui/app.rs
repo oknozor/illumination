@@ -64,14 +64,14 @@ impl App {
         // Attach gtk main thread to the nvim handler sender
         receiver.attach(None, move |msg| {
             match msg {
-                GtkMessage::Redraw(buffer) => {
+                GtkMessage::Redraw(buffer, scroll_target) => {
                     *cur_buffer_ref.lock().unwrap() = buffer.clone();
-                    webkit.load_html(&render(&buffer, 0), None);
+                    webkit.load_html(&render(&buffer, scroll_target), None);
                 }
-                GtkMessage::BufferChanged(title, buffer) => {
+                GtkMessage::BufferChanged(title, buffer, scroll_target) => {
                     *cur_buffer_ref.lock().unwrap() = buffer.clone();
-                    webkit.load_html(&render(&buffer, 0), None);
-                    scroll_to(&webkit, 500);
+                    webkit.load_html(&render(&buffer, scroll_target), None);
+                   // scroll_to(&webkit, 500);
                     window.set_title(title.as_str());
                 }
                 GtkMessage::RustDocOpen => {
@@ -93,7 +93,7 @@ impl App {
             let selection = selection.as_str();
             info!("changing theme to : {}", selection);
             settings::set_theme(Theme::from(selection));
-            webkit.load_html(&render(&cur_buffer_ref.lock().unwrap(), 0), None);
+            webkit.load_html(&render(&cur_buffer_ref.lock().unwrap(), 0.0), None);
         });
 
         thread::spawn(move || {
