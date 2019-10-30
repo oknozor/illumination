@@ -1,24 +1,24 @@
 [package]
 name = "illumination"
 version = "0.2.0"
-authors = ["okno <paul.delafosse@protonmail.com>"]
+authors = ["Paul D <paul.delafosse@protonmail.com>"]
 edition = "2018"
+license = "MIT"
+repository = "https://github.com/oknozor/illumination"
+description = """
+A simple Neovim plugin to render buffers in a WebKit2Gtk window.
+"""
 
 [dependencies]
 neovim-lib = "0.6"
 horrorshow = "0.6.2"
 webkit2gtk = "0.8"
 pulldown-cmark = { version = "0.6", default-features = false, features = ["simd"] }
-pango = "0.7"
-fragile = "0.3.0"
-glib= "0.8"
-gio = "0.7"
-config = "0.9"
+gtk = "^0"
+glib= "^0"
+gio = "^0"
+config = "^0"
 lazy_static = "1.4.0"
-dirs = "2.0"
-
-
-[build-dependencies]
 dirs = "2.0"
 
 
@@ -26,10 +26,7 @@ dirs = "2.0"
 version = "0.4"
 features = ["max_level_debug", "release_max_level_warn"]
 
-[dependencies.gtk]
-features = ["v3_22"]
-version = "0.7"
-
-[dependencies.sourceview]
-features = ["v3_22"]
-version = "0.7"
+[features]
+gtk_3_18 = ["gtk/v3_18", "gio/v2_46", "glib/v2_46"]
+gtk_3_22_30 = ["gtk_3_18", "gtk/v3_22_30", "gio/v2_56", "glib/v2_56"]
+gtk_3_24 = ["gtk_3_22_30", "gtk/v3_24", "gio/v2_58", "glib/v2_58"]
