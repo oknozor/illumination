@@ -11,11 +11,11 @@ extern crate dirs;
 
 mod doc_lang;
 mod html;
+mod logger;
 mod nvim;
 mod preview;
 mod settings;
 mod ui;
-mod logger;
 
 use gtk::*;
 use ui::App;
@@ -31,5 +31,3 @@ fn main() {
     app.connect_nvim();
     gtk::main();
 }
-
-

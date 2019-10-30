@@ -2,9 +2,9 @@ use crate::nvim::handler::Message::*;
 use neovim_lib::{Neovim, NeovimApi, Session, UiAttachOptions};
 
 pub enum GtkMessage {
-    Redraw(f64),                        // scroll target %
-    BufferUpdate(String, f64),          // (buffer content, scroll target %)
-    BufferDetached(String, String, f64),// (buffer name, buffer content, scroll target %)
+    Redraw(f64),                         // scroll target %
+    BufferUpdate(String, f64),           // (buffer content, scroll target %)
+    BufferDetached(String, String, f64), // (buffer name, buffer content, scroll target %)
     RustDocOpen,
 }
 
@@ -191,9 +191,9 @@ impl NvimHandler {
 
                     let name = self.get_curr_buffer_name();
                     let buffer = self.curr_buff_to_string();
-                    let _res = self
-                        .sender
-                        .send(GtkMessage::BufferDetached(name, buffer, percent_offset));
+                    let _res =
+                        self.sender
+                            .send(GtkMessage::BufferDetached(name, buffer, percent_offset));
                 }
 
                 Message::Lock => {
