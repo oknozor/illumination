@@ -50,6 +50,25 @@ impl App {
         }
     }
 
+    pub fn first_load(&self, input: String) {
+        let theme_selector = self.header.theme_selector.clone();
+
+        let webkit = self.content.preview.clone();
+        webkit.load_uri(&input);
+
+        theme_selector.connect_changed(move |combo| {
+            let selection = combo.get_active_text().unwrap();
+            let selection = selection.as_str();
+            info!("changing theme to : {}", selection);
+            settings::set_theme(Theme::from(selection));
+            webkit.load_uri(&input);
+        });
+    }
+
+    pub fn standalone_mode(&self, uri: &str) {
+        self.first_load("file:///home/okno/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/share/doc/rust/html/std/fs/struct.File.html".to_string());
+    }
+
     pub fn connect_nvim(&self) {
         let (sender, receiver) = glib::MainContext::channel::<GtkMessage>(glib::PRIORITY_DEFAULT);
         let mut nvim_handler = NvimHandler::new(sender);
@@ -95,17 +114,9 @@ impl App {
             glib::Continue(true)
         });
 
-        let theme_selector = self.header.theme_selector.clone();
         let cur_buffer_ref = Arc::clone(&cur_buffer);
-        let webkit = self.content.preview.clone();
-
-        theme_selector.connect_changed(move |combo| {
-            let selection = combo.get_active_text().unwrap();
-            let selection = selection.as_str();
-            info!("changing theme to : {}", selection);
-            settings::set_theme(Theme::from(selection));
-            webkit.load_html(&render(&cur_buffer_ref.lock().unwrap(), 0.0), None);
-        });
+        let cur_buffer = &cur_buffer_ref.lock().unwrap();
+        self.first_load(cur_buffer.to_string());
 
         thread::spawn(move || {
             nvim_handler.revc();

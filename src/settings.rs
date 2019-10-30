@@ -17,7 +17,13 @@ lazy_static! {
 
     static ref SETTINGS: RwLock<Config> = RwLock::new({
         let mut settings = Config::default();
-        settings.merge(ConfigFile::with_name("config.toml")).unwrap();
+
+        if settings.merge(ConfigFile::with_name("config.toml")).is_ok() {
+            info!("using user config");
+        } else {
+            println!("no config found, using default");
+        }
+
 
         settings
     });
