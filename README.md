@@ -11,7 +11,7 @@ Nvim Illumination is a simple Neovim plugin to render buffers in a WebKit2Gtk wi
 
 Note that unlike many note rendering plugins Illumination does not render files, it renders your buffer directly via [nvim rpc api](https://neovim.io/doc/user/api.html), it means you don't need to save the current buffer to render your notes, it is really live!  
 
-Issues and PRs are welcome but Illumination is at a early stage of development, before submiting one please read the [Roadmap](#roadmap) section.  
+Issues and PRs are welcome! 
 
 ![example screenshot](screenshots/demo.png)
 
@@ -20,23 +20,30 @@ Issues and PRs are welcome but Illumination is at a early stage of development, 
 ### Manual installation
 ---
 
-1. Compile the rust binary and add it to your path :
-
-```sh 
-git clone  https://github.com/oknozor/illumination/ 
+```sh
+git clone  https://github.com/oknozor/illumination/
 cd illumination
-cargo install --path .
+./install
 ```
 
-2. Copy `illumination.vim` in your runtime path (see `:help runtimepath`) :
+### Using vim-plug
 
-### Usage
+```vim
+Plug 'oknozor/illumination', { 'dir': '~/.illumination', 'do': '.install.sh' }
+```
 
-Within Neovim use the `:Render` command to start rendering and `:RenderStop` to quit Illumination.
+## Usage
+
+| Command          | Description                                   |
+| ---------------- |:---------------------------------------------:|
+| :Illuminate      | Start rendering the current buffer            |
+| :IlluminateClose | Close Illumination                            |
+| :IlluminateLock  | Toggle lock (won't change active buffer)      |
+| :IlluminateOpen  | Render a local file or an URL and toogle lock |
 
 ## Debug
 
-To debug Illumination start nvim in RPC mode on port `6666` : 
+To debug Illumination start nvim in RPC mode on port `6666` :
 
 ```
 nvim test.md --listen 127.0.0.1:6666
@@ -48,21 +55,3 @@ Then run Illumination without cargo `--release` option.
 cd illumination
 cargo run 
 ```
-
-## Roadmap
-
----
-- Build
-    - [ ] build script
-    - [ ] travis
-- CSS
-    - [ ] replace CDN with local CSS  
-    - [ ] theme selection via config file
-- Nvim integration
-    - [ ] filetype 
-    - [x] switching buffer
-- Gtk
-    - [ ] add pdf export
-    - [ ] asciidoctor support
-    - [ ] latex support
-    - [x] autoscroll
