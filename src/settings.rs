@@ -1,8 +1,8 @@
-use std::collections::HashMap;
 use crate::html::theme::Theme;
 use config::{Config, File as ConfigFile};
 use dirs;
 use lazy_static;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::sync::Mutex;
