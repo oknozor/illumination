@@ -6,8 +6,8 @@
 
 From Wikipedia, the free encyclopedia
 
---- 
-Nvim Illumination is a simple Neovim plugin to render buffers in a WebKit2Gtk window. Since it uses the Neovim rpc-api to send buffer updates, ⚠️ **it will not work with vim** ⚠️. 
+---
+Illumination is a simple Neovim plugin to render buffers in a WebKit2Gtk window. Since it uses the Neovim rpc-api to send buffer updates, ⚠️ **it will not work with vim** ⚠️.
 
 Note that unlike many note rendering plugins Illumination does not render files, it renders your buffer directly via [nvim rpc api](https://neovim.io/doc/user/api.html), it means you don't need to save the current buffer to render your notes, it is really live!  
 
@@ -56,8 +56,8 @@ cargo run
     - [ ] build script
     - [ ] travis
 - CSS
-    - [ ] replace CDN with local CSS  
-    - [ ] theme selection via config file
+    - [x] replace CDN with local CSS  
+    - [x] theme selection via config file
 - Nvim integration
     - [ ] filetype 
     - [x] switching buffer
