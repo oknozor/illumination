@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::html::theme::Theme;
 use config::{Config, File as ConfigFile};
 use dirs;
