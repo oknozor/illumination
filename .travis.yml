@@ -1,7 +1,5 @@
 language: rust
 rust:
-- nightly
-- beta
 - stable
 addons:
   apt:
@@ -9,9 +7,21 @@ addons:
     - libgtk-3-dev
     - libsoup2.4-dev
     - webkit2gtk-4.0
+
 env:
-  - GTK=3.4
   - GTK=3.18
-  - GTK=3.22.30
+
+before_script:
+  - rustup component add rustfmt
+
 script:
-  - cargo build ---features gtk_3_18
+  - cargo fmt --all
+  - cargo build ---features gtk_3_18 --release
+
+deploy:
+  provider: releases
+  api_key: $GH_TOKEN
+  file: "target/release/illumination"
+  skip_cleanup: true
+  on:
+    tags: true
