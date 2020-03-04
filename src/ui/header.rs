@@ -1,3 +1,4 @@
+use crate::gtk::prelude::ComboBoxExtManual;
 use crate::html::theme::Theme;
 use gtk::*;
 
