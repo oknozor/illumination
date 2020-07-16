@@ -28,6 +28,13 @@ cd illumination
 
 ### Using vim-plug
 
+#### Requirement 
+
+- [vim-plug](https://github.com/junegunn/vim-plug) obviously
+- [Rust](https://www.rust-lang.org/) with cargo as a package manager
+- You need to have `$HOME/.cargo/bin/` in your `$PATH` :
+  you can add the following line in your bashrs, zshrc or /etc/profile : `export PATH="$HOME/.cargo/bin:$PATH"`
+
 ```vim
 Plug 'oknozor/illumination', { 'dir': '~/.illumination', 'do': '.install.sh' }
 ```
