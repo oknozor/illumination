@@ -109,17 +109,3 @@ pub fn set_theme(theme: Theme) {
 
     *THEME.lock().unwrap() = InMemoryTheme { theme, contents };
 }
-
-// dump config.toml
-#[cfg(debug_assertions)]
-pub fn show() {
-    info!(
-        " * Settings :: \n\x1b[31m{:?}\x1b[0m",
-        SETTINGS
-            .read()
-            .unwrap()
-            .clone()
-            .try_into::<HashMap<String, String>>()
-            .unwrap()
-    );
-}

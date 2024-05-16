@@ -13,9 +13,12 @@ A simple Neovim plugin to render buffers in a WebKit2Gtk window.
 neovim-lib = "0.6"
 horrorshow = "0.6.2"
 webkit2gtk = "0.9"
-pulldown-cmark = { version = "0.6", default-features = false, features = ["simd"] }
+pulldown-cmark = { version = "0.11.0", default-features = false, features = [
+    "simd",
+    "html",
+] }
 gtk = "^0"
-glib= "^0"
+glib = "^0"
 gio = "^0"
 config = "^0"
 lazy_static = "1.4.0"

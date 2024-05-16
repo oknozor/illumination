@@ -23,9 +23,6 @@ use ui::App;
 fn main() {
     logger::init().expect("Error initializing logger");
     info!("Illumination started in debud mode");
-    #[cfg(debug_assertions)]
-    settings::show();
-
     let app = App::new();
     app.window.show_all();
     app.connect_nvim();

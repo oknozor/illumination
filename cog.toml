@@ -1,15 +1,9 @@
-changelog_path = "CHANGELOG.md"
-pre_bump_hooks = [
-  "cargo build --release",
-  "cargo bump %version"
-]
+pre_bump_hooks = ["cargo build --release", "cargo bump %version"]
 
-post_bump_hooks = [
-  "git push",
-  "git push origin %version"
-]
-authors = [ 
-{ signature ="Paul Delafosse", username = "oknozor" }
-]
+post_bump_hooks = ["git push", "git push origin %version"]
+
+[changelog]
+path = "CHANGELOG.md"
+authors = [{ signature = "Paul Delafosse", username = "oknozor" }]
 
 [commit_types]

@@ -12,6 +12,7 @@ fn mark_to_html(markdown: &str) -> String {
     options.insert(Options::ENABLE_TABLES);
     options.insert(Options::ENABLE_FOOTNOTES);
     options.insert(Options::ENABLE_TASKLISTS);
+    options.insert(Options::ENABLE_MATH);
     let parser = Parser::new_ext(&markdown, options);
     let mut buffer = String::new();
     html::push_html(&mut buffer, parser);
